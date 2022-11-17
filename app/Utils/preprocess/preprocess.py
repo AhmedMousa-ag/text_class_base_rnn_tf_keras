@@ -7,9 +7,10 @@ import pandas as pd
 import numpy as np
 
 ARTIFACTS_PATH = config.PREPROCESS_ARTIFACT_PATH
+DATA_SCHEMA = config.DATA_SCHEMA
 
 class preprocess_data():
-    def __init__(self, data, data_schema,artifacts_path=ARTIFACTS_PATH, shuffle_data=True, train=True):
+    def __init__(self, data, data_schema=DATA_SCHEMA,artifacts_path=ARTIFACTS_PATH, shuffle_data=True, train=True):
         """
         args:
             data: The data we want to preprocess
@@ -43,6 +44,8 @@ class preprocess_data():
         if self.data.isnull().sum() > 0:
             self.data.dropna(inplace=True)
 
+        self.data.reset_index(drop=True)
+
 
     def fit_transform(self):
         ''' preprocess data based on the schema, in case it's not training then it will load the preprocess pickle object'''
@@ -67,6 +70,12 @@ class preprocess_data():
             return labels[0]
         else:   # Otherwise it returns a list of labels
             return labels
+
+    def drop_ids(self):
+        self.data.drop('idField',axis=1,inplace=True)
+
+    def get_ids(self):
+        return self.data['idField']
 
     def __split_x_y(self):
         self.y_data = self.data[self.LABEL]
