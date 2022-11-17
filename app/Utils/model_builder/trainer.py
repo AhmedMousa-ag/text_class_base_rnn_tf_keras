@@ -1,9 +1,13 @@
-
+import os
 import tensorflow as tf
 import tensorflow_hub as hub
 from tensorflow.keras.layers import Dense, Bidirectional, GRU
 from tensorflow.keras.metrics import Recall, Accuracy, Precision
 import numpy as np
+import config
+
+MODEL_NAME = config.MODEL_NAME
+MODEL_SAVE_PATH = config.MODEL_SAVE_PATH
 
 
 class RNN_pretrained_embed():
@@ -42,3 +46,15 @@ class RNN_pretrained_embed():
 
         self.model.fit(x_train, y_train, validation_data=(
             x_val, y_val), validation_steps=len(x_val))
+
+        return self.model
+
+
+    def save_model(self,save_path=MODEL_SAVE_PATH):
+        path = os.path.join(save_path,MODEL_NAME)
+        self.model.save(path)
+
+    @classmethod
+    def load_model(self,save_path=MODEL_SAVE_PATH):
+        path = os.path.join(save_path,MODEL_NAME)
+        self.model = tf.load_model(path)
