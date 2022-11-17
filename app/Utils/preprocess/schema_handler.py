@@ -2,22 +2,6 @@
 
 
 
-'''test_schema = {
- "problemCategory": "text_classification_base",
- "version": "1.0",
- "language": "en-us",
- "encoding": "utf-8",
- "inputDatasets": {
- "textClassificationBaseMainInput": {
-    "idField": "id",
-    "targetField": "class",
-    "documentField": "text"
-        }
-    }
- }
-'''
-
-
 def __get_prep_param(pp_params,data_schema,prev_key=None): #Needs to be tested on other schemas type
     """It should handle any kind of schemas, currently tested on text dataset schema"""
     if isinstance(data_schema,(dict,list)):
