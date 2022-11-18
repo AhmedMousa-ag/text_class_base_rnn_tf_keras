@@ -6,10 +6,10 @@ import os
 
 SAVED_TEST_PRED_PATH = config.SAVED_TEST_PRED_PATH
 
-class predictor():
+class Predictor():
     def __init__(self,data):
         self.model = load_model()
-        self.preprocessor = preprocess_data(data)
+        self.preprocessor = preprocess_data(data,train=False)
 
     def predict_get_results(self):
         ids = self.preprocessor.get_ids()
