@@ -58,15 +58,18 @@ class preprocess_data():
         for key in self.schema_param.keys():
             # for sorting the columns name later
             self.sort_col_names.append(key)
-            if key == "id":
+            if key == "idField":
                 # It does nothing, but in case we decided to do something in the future
-                self.data[key] = prep_NUMERIC.handle_id(self.data[key])
-            elif key == "class":  # Will assume it's label and startes to label encode it
-                self.data[key] = prep_NUMERIC.LabelEncoder(
-                    self.data[key], key, self.artifacts_path, self.train)
-            elif key == "txt":
-                self.data[key] = prep_TEXT.get_process_text(
-                    self.data[key], key, self.artifacts_path, self.train)
+                col_name = self.schema_param[key]
+                self.data[col_name] = prep_NUMERIC.handle_id(self.data[col_name])
+            elif key == "targetField":  # Will assume it's label and startes to label encode it
+                col_name = self.schema_param[key]
+                self.data[col_name] = prep_NUMERIC.LabelEncoder(
+                    self.data[col_name], col_name, self.artifacts_path, self.train)
+            elif key == "documentField":
+                col_name = self.schema_param[key]
+                self.data[col_name] = prep_TEXT.get_process_text(
+                    self.data[col_name], col_name, self.artifacts_path, self.train)
 
     def define_labels(self):
         labels = []
