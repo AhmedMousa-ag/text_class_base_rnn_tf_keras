@@ -1,35 +1,48 @@
 import sys
-import Utils
 from Utils.preprocess.preprocess import preprocess_data
 import config
 import traceback
+import pandas as pd
+from Utils.model_builder import RNN_pretrained_embed
+from Utils.utlis import read_json_file
+import os
 
 hyper_param_path = config.HYPER_PARAM_PATH
-data_schema_path = config.DATA_SCHEMA_PATH
+data_schema = config.DATA_SCHEMA
 data_path = config.DATA_PATH
-artifact_path = config.PREPROCESS_ARTIFACT_PATH
+failure_path = config.FAILURE_PATH 
+save_model_path = config.MODEL_SAVE_PATH
 
 def train():    
     try:        
         print('---------------------Training Started---------------------.')
-        # Read in any hyperparameters that the user defined with algorithm submission
-        hyper_parameters = Utils.get_hyperparameters(hyper_param_path)
-        # Read data
-        train_data = Utils.get_data(data_path)   
-        # read data config
-        data_schema = Utils.preprocess.schema_handler.get_data_schema(data_schema_path)
-        # get trained preprocessor, model, training history 
-        preprocessor, model = model_trainer.get_trained_model(train_data, data_schema, hyper_parameters)        
-        # Save the processing pipeline   
-        pipeline.save_preprocessor(preprocessor, model_path)
-        # Save the model 
-        classifier.save_model(model, model_path)    
-        print('Done training.')
+        # Container reads training data from opt/ml_vol/inputs/data/training directory in mounted drive.
+        data = pd.read_csv(data_path)
+        # Container reads data config (schema) JSON file from the opt/ml_vol/inputs/data_config/ directory in mounted drive.
+        preprocessor = preprocess_data(data=data) # no need to specify where the data schema, it reads it.
+        # Container reads hyperparameters.json file from opt/ml_vol/model/model_config/ directory in mounted drive.
+        hyperparametrs = read_json_file(hyper_param_path)
+
+        # Container uses the three inputs above to train the preprocessor and the model and saves the artifacts in the opt/ml_vol/model/artifacts/ directory.
+        model_trainer = RNN_pretrained_embed()
+        preprocessor.drop_ids()
+        x_train,y_train,x_val,y_val = preprocessor.get_train_test_data()
+
+        model_trainer.fit(x_train=x_train,y_train=y_train,x_val=x_val,y_val=y_val,training_params=hyperparametrs)
+
+        model_trainer.save_model(save_model_path)
+        # If the task fails for any reason in any of the above steps, then container writes the failure reason in a file called train_failure in the
+        
+        # opt/ml_vol/outputs/errors/ directory.        
+
+
+
     except Exception as e:
         print("error!")
         # Write out an error file. This will be returned as the failureReason to the client.
         trc = traceback.format_exc()
-        with open(failure_path, 'w') as s:
+        failure_file_path = os.path.join(failure_path,"train_failure.txt")
+        with open(failure_file_path, 'w') as s:
             s.write('Exception during training: ' + str(e) + '\n' + trc)
         # Printing this causes the exception to be in the training job logs, as well.
         print('Exception during training: ' + str(e) + '\n' + trc, file=sys.stderr)
