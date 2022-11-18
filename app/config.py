@@ -16,11 +16,15 @@ FAILURE_PATH = os.path.join(prefix,'outputs','errors')
 
 HYPER_PARAM_PATH = os.path.join(prefix,'model','model_config')
 
+DATA_PATH = os.path.join(prefix,'inputs','data')
 
-DATA_PATH = os.path.join(prefix,'inputs','data','training') #TODO change it to change between test and train
+TRAIN_DATA_PATH = os.path.join(DATA_PATH,'training') 
+
+TEST_DATA_PATH = os.path.join(DATA_PATH,'testing')
 
 MODEL_NAME= "tf_RNN_pretrained_embed.h5"
 
 MODEL_SAVE_PATH = os.path.join(prefix,'model','artifacts') 
 
-SAVED_TEST_PRED_PATH = os.path.join() #TODO
+
+SAVED_TEST_PRED_PATH = os.path.join(prefix,"outputs","testing_outputs")
