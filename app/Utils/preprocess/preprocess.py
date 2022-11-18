@@ -10,7 +10,8 @@ ARTIFACTS_PATH = config.PREPROCESS_ARTIFACT_PATH
 DATA_SCHEMA = config.DATA_SCHEMA
 
 class preprocess_data():
-    def __init__(self, data, data_schema=DATA_SCHEMA,artifacts_path=ARTIFACTS_PATH, shuffle_data=True, train=True):
+    def __init__(self, data, data_schema=DATA_SCHEMA,artifacts_path=ARTIFACTS_PATH,
+                     shuffle_data=True, train=True,gen_val_data=True):
         """
         args:
             data: The data we want to preprocess
@@ -23,8 +24,9 @@ class preprocess_data():
             self.data = pd.DataFrame(data)
         else:
             self.data = data
-
+        self.gen_val_data = gen_val_data
         self.data_schema = data_schema
+        self.sort_col_names = []
         self.schema_param = produce_schema_param(self.data_schema)
         self.artifacts_path = artifacts_path
         self.train = train
@@ -36,6 +38,7 @@ class preprocess_data():
             self.data.sample(frac=1).reset_index(drop=True)
 
         self.fit_transform() # preprocess data based on the schema
+        self.sort_as_schem()
 
     def clean_data(self):
         if self.data.duplicated().sum() > 0:
@@ -50,6 +53,7 @@ class preprocess_data():
     def fit_transform(self):
         ''' preprocess data based on the schema, in case it's not training then it will load the preprocess pickle object'''
         for key in self.schema_param.keys():
+            self.sort_col_names.append(key) #for sorting the columns name later
             if key == "id":
                 # It does nothing, but in case we decided to do something in the future
                 self.data[key] = prep_NUMERIC.handle_id(self.data[key])
@@ -77,6 +81,11 @@ class preprocess_data():
     def get_ids(self):
         return self.data['idField']
 
+    def sort_as_schem(self):
+        '''To ensure the consistancy of inputs are the same each time'''
+        self.data = self.data[self.sort_col_names]
+
+
     def __split_x_y(self):
         self.y_data = self.data[self.LABEL]
         self.x_data = self.data.drop([self.LABEL], axis=1)
@@ -102,8 +111,11 @@ class preprocess_data():
         """returns: 
             x_train, y_train, x_test, y_test
         """
-        self.__train_test_split()
-        return self.x_train, self.y_train, self.x_test, self.y_test
+        if self.gen_val_data:
+            self.__train_test_split()
+            return self.x_train, self.y_train, self.x_test, self.y_test
+        else:
+            return self.x_train,self.y_train
 
     def get_data(self):
         return self.data
