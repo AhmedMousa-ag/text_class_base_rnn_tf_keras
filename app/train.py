@@ -9,7 +9,7 @@ import os
 
 hyper_param_path = config.HYPER_PARAM_PATH
 data_schema = config.DATA_SCHEMA
-data_path = config.DATA_PATH
+data_path = config.TRAIN_DATA_PATH
 failure_path = config.FAILURE_PATH 
 save_model_path = config.MODEL_SAVE_PATH
 
