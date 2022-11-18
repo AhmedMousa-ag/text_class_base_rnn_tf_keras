@@ -9,9 +9,10 @@ import numpy as np
 ARTIFACTS_PATH = config.PREPROCESS_ARTIFACT_PATH
 DATA_SCHEMA = config.DATA_SCHEMA
 
+
 class preprocess_data():
-    def __init__(self, data, data_schema=DATA_SCHEMA,artifacts_path=ARTIFACTS_PATH,
-                     shuffle_data=True, train=True,gen_val_data=True):
+    def __init__(self, data, data_schema=DATA_SCHEMA, artifacts_path=ARTIFACTS_PATH,
+                 shuffle_data=True, train=True, gen_val_data=True):
         """
         args:
             data: The data we want to preprocess
@@ -21,39 +22,42 @@ class preprocess_data():
             train: if it's True it will save artifacts to use later in serving or testing
         """
         if not isinstance(data, pd.DataFrame):  # This should handle if the passed data is json or something else
-            self.data = pd.DataFrame(data)
+            self.data = pd.DataFrame.from_dict(data, orient="index")
         else:
             self.data = data
+
         self.gen_val_data = gen_val_data
         self.data_schema = data_schema
         self.sort_col_names = []
         self.schema_param = produce_schema_param(self.data_schema)
         self.artifacts_path = artifacts_path
         self.train = train
-        self.LABELS = self.define_labels() # Get's labels columns
+        self.LABELS = self.define_labels()  # Get's labels columns
 
-        self.clean_data() # Checks for dublicates or null values and removes them
+        self.clean_data()  # Checks for dublicates or null values and removes them
 
         if shuffle_data:
             self.data.sample(frac=1).reset_index(drop=True)
 
-        self.fit_transform() # preprocess data based on the schema
+        self.fit_transform()  # preprocess data based on the schema
         self.sort_as_schem()
+        if self.train:
+            self.save_label_pkl()
 
     def clean_data(self):
         if self.data.duplicated().sum() > 0:
             self.data.drop_duplicates(inplace=True)
-        
+
         if self.data.isnull().sum() > 0:
             self.data.dropna(inplace=True)
 
         self.data.reset_index(drop=True)
 
-
     def fit_transform(self):
         ''' preprocess data based on the schema, in case it's not training then it will load the preprocess pickle object'''
         for key in self.schema_param.keys():
-            self.sort_col_names.append(key) #for sorting the columns name later
+            # for sorting the columns name later
+            self.sort_col_names.append(key)
             if key == "id":
                 # It does nothing, but in case we decided to do something in the future
                 self.data[key] = prep_NUMERIC.handle_id(self.data[key])
@@ -76,7 +80,7 @@ class preprocess_data():
             return labels
 
     def drop_ids(self):
-        self.data.drop('idField',axis=1,inplace=True)
+        self.data.drop('idField', axis=1, inplace=True)
 
     def get_ids(self):
         return self.data['idField']
@@ -85,10 +89,15 @@ class preprocess_data():
         '''To ensure the consistancy of inputs are the same each time'''
         self.data = self.data[self.sort_col_names]
 
+    def save_label_pkl(self):
+        """Saves labels as pickle file to call them laters and know the labels column later for invers encode"""
+        path = os.path.join(self.artifacts_path, "labels.pkl")
+        pickle.dump(self.LABELS, open(path, 'wb'))
+        
 
     def __split_x_y(self):
-        self.y_data = self.data[self.LABEL]
-        self.x_data = self.data.drop([self.LABEL], axis=1)
+        self.y_data = self.data[self.LABELS]
+        self.x_data = self.data.drop([self.LABELS], axis=1)
         return self.x_data, self.y_data
 
     def __train_test_split(self, train_ratio=0.8):
@@ -96,7 +105,7 @@ class preprocess_data():
         x_train_indx = int(train_ratio*len(self.x_data))
         self.x_train = self.x_data.iloc[:x_train_indx, :]
 
-        if isinstance(self.LABEL, str):  # If it's one single label not multiple labels
+        if isinstance(self.LABELS, str):  # If it's one single label not multiple labels
             self.y_train = self.y_data.iloc[:x_train_indx]
             self.y_test = self.y_data.iloc[x_train_indx:]
         else:  # If it's multiple labels
@@ -115,12 +124,20 @@ class preprocess_data():
             self.__train_test_split()
             return self.x_train, self.y_train, self.x_test, self.y_test
         else:
-            return self.x_train,self.y_train
+            return self.x_train, self.y_train
 
     def get_data(self):
         return self.data
 
+    def invers_labels(self, data):
+        """Handles only onle label currently"""
+        path = os.path.join(self.artifacts_path, "labels.pkl")
+        labels = pickle.loads(path)
+        inv_data = prep_NUMERIC.Inverse_Encoding(data, labels, self.artifacts_path)
+        return inv_data
 # ----------------------------------------------------------
+
+
 class prep_TEXT():
     def __init__(self):
         pass
@@ -130,6 +147,8 @@ class prep_TEXT():
         return data
 
 # -----------------------------------------------------------
+
+
 class prep_NUMERIC():
     def __init__(self):
         pass
@@ -144,6 +163,13 @@ class prep_NUMERIC():
         else:
             encoder = pickle.loads(path)
             encoded_data = encoder.transform(data)
+        return encoded_data
+
+    @classmethod
+    def Inverse_Encoding(self, data, col_name, artifacts_path):
+        path = os.path.join(artifacts_path, col_name+".pkl")
+        encoder = pickle.loads(path)
+        encoded_data = encoder.inverse_transform(data)
         return encoded_data
 
     @classmethod
