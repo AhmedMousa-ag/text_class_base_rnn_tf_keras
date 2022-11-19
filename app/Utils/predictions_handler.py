@@ -9,20 +9,20 @@ SAVED_TEST_PRED_PATH = config.SAVED_TEST_PRED_PATH
 class Predictor():
     def __init__(self,data=None,model=None):
 
-        if model == None:
+        if model is None:
             self.model = load_model()
         else: # Modelshould be reloaded before getting the reques, that's the reason to pass the model to the predictor
             self.model = model
 
         
-        if not data ==None:
+        if not data is None:
             self.preprocessor = preprocess_data(data,train=False)
 
     def predict_get_results(self,data=None):
         ids = self.preprocessor.get_ids()
         self.preprocessor.drop_ids()
 
-        if not data == None:
+        if not data is None:
             self.preprocessor = preprocess_data(data,train=False)
 
         processed_data = self.preprocessor.get_data()
