@@ -9,7 +9,7 @@ failure_path = config.FAILURE_PATH
 
 def test():    
     try:        
-        print('Starting test predictions')
+        print('---------------------Started Testing Successfully---------------------.')
     
         test_data = pd.read_csv(test_data_path)
 
@@ -17,8 +17,7 @@ def test():
 
         predictor.save_predictions()
 
-
-        print('Done test predictions.')
+        print('---------------------Testing Finished Successfully---------------------.')
     except Exception as e:
         print("error!")
         # Write out an error file. This will be returned as the failureReason to the client.
