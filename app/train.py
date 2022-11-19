@@ -31,10 +31,8 @@ def train():
         model_trainer.fit(x_train=x_train,y_train=y_train,x_val=x_val,y_val=y_val,training_params=hyperparametrs)
 
         model_trainer.save_model(save_model_path)
-        # If the task fails for any reason in any of the above steps, then container writes the failure reason in a file called train_failure in the
-        
-        # opt/ml_vol/outputs/errors/ directory.        
 
+        print('---------------------Training Finished Successfully---------------------.')
 
 
     except Exception as e:

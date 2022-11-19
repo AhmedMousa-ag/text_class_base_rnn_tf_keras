@@ -167,7 +167,7 @@ class prep_TEXT():
         
         max_tokens = len(np.unique([text.split() for text in data]))
         max_length = round(sum([len(i.split()) for i in data])/len(data))
-        print("output_sequence_length: ",max_length)
+        
         text_vectorizer = TextVectorization(max_tokens=max_tokens, # how many words in the vocabulary (all of the different words in your text)
                                     standardize="lower_and_strip_punctuation", # how to process text
                                     split="whitespace", # how to split tokens
