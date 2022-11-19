@@ -58,28 +58,31 @@ class preprocess_data():
         ''' preprocess data based on the schema, in case it's not training then it will load the preprocess pickle object'''
         for i,key in enumerate(self.schema_param.keys()):
             # for sorting the columns name later
-            self.sort_col_names.append(self.schema_param[key])
-
             if i == 0: #Ids column always the first key and first column
                 self.id_col = self.schema_param[key]
             if key == "idField":
                 # It does nothing, but in case we decided to do something in the future
                 col_name = self.schema_param[key]
+                self.sort_col_names.append(col_name)
                 self.data[col_name] = prep_NUMERIC.handle_id(self.data[col_name])
+
             elif key == "targetField":  # Will assume it's label and startes to label encode it
-                col_name = self.schema_param[key]
-                self.data[col_name] = prep_NUMERIC.LabelEncoder(
-                    self.data[col_name], col_name, self.artifacts_path, self.train)
+                if self.train:
+                    col_name = self.schema_param[key]
+                    self.sort_col_names.append(col_name)
+                    self.data[col_name] = prep_NUMERIC.LabelEncoder(
+                        self.data[col_name], col_name, self.artifacts_path, self.train)
             elif key == "documentField":
                 col_name = self.schema_param[key]
-                #self.data[col_name] =
+                self.sort_col_names.append(col_name)
+                
                 prep_text = prep_TEXT()
                 
                 self.data[col_name] = prep_text.get_process_text(
                     data=self.data[col_name]
                     ,col_name=col_name,artifacts_path= self.artifacts_path,
                     Training= self.train)
-
+                
     def define_labels(self):
         labels = []
         for key in self.schema_param.keys():
@@ -95,7 +98,7 @@ class preprocess_data():
         self.data.drop(self.id_col, axis=1, inplace=True)
 
     def get_ids(self):
-        return self.data['idField']
+        return self.data[self.sort_col_names[0]]
 
     def sort_as_schem(self):
         '''To ensure the consistancy of inputs are the same each time'''
@@ -103,8 +106,16 @@ class preprocess_data():
 
     def save_label_pkl(self):
         """Saves labels as pickle file to call them laters and know the labels column later for invers encode"""
-        path = os.path.join(self.artifacts_path, "labels.pkl")
-        pickle.dump(self.LABELS, open(path, 'wb'))
+        if self.train:
+            path = os.path.join(self.artifacts_path, "labels.txt")
+            # Will save it in a txt file
+            with open(path, "w") as f:
+                if isinstance(self.LABELS,str): #If it's one label not multiple
+                    f.write(self.LABELS)
+                else:   
+                    for label in self.LABELS:
+                        f.write(label+"\n")
+            
     
 
     def __split_x_y(self):
@@ -143,8 +154,17 @@ class preprocess_data():
 
     def invers_labels(self, data):
         """Handles only onle label currently"""
-        path = os.path.join(self.artifacts_path, "labels.pkl")
-        labels = pickle.loads(path)
+        path = os.path.join(self.artifacts_path, "labels.txt")
+        new_labels_list = []
+        with open(path, "rb") as f:
+            for line in f:
+                new_labels_list.append(line)
+        
+        if len(new_labels_list) == 1: #If it reads only one line which is one label
+            labels =new_labels_list[0].decode().replace("\n","")
+        else:
+            labels = new_labels_list.decode().replace("\n","")
+
         inv_data = prep_NUMERIC.Inverse_Encoding(data, labels, self.artifacts_path)
         return inv_data
 # ----------------------------------------------------------
@@ -211,14 +231,15 @@ class prep_NUMERIC():
             encoded_data = encoder.fit_transform(data)
             pickle.dump(encoder, open(path, 'wb'))
         else:
-            encoder = pickle.loads(path)
+            encoder = pickle.load(open(path,"rb"))
             encoded_data = encoder.transform(data)
         return encoded_data
 
     @classmethod
     def Inverse_Encoding(self, data, col_name, artifacts_path):
+        print("column name: ",col_name)
         path = os.path.join(artifacts_path, col_name+".pkl")
-        encoder = pickle.loads(path)
+        encoder = pickle.load(open(path,"rb")) 
         encoded_data = encoder.inverse_transform(data)
         return encoded_data
 
@@ -234,7 +255,7 @@ class prep_NUMERIC():
             scaled_data = scaler.fit_transform(np.array(data).reshape(-1, 1))
             pickle.dump(scaler, open(path, 'wb'))
         else:
-            scaler = pickle.loads(path)
+            scaler = pickle.load(open(path,"rb"))
             scaled_data = scaler.transform(np.array(data).reshape(-1, 1))
         return scaled_data
 
@@ -246,6 +267,6 @@ class prep_NUMERIC():
             scaled_data = scaler.fit_transform(np.array(data).reshape(-1, 1))
             pickle.dump(scaler, open(path, 'wb'))
         else:
-            scaler = pickle.loads(path)
+            scaler = pickle.load(open(path,"rb"))
             scaled_data = scaler.transform(np.array(data).reshape(-1, 1))
         return scaled_data

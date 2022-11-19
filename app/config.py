@@ -26,10 +26,12 @@ if not os.path.exists(DATA_PATH):
     os.makedirs(DATA_PATH)
 
 TRAIN_DATA_PATH = os.path.join(DATA_PATH,'training',"train_data_file.csv") 
-
-TEST_DATA_PATH = os.path.join(DATA_PATH,'testing')
 if not os.path.exists(TRAIN_DATA_PATH):
     os.makedirs(TRAIN_DATA_PATH)
+
+TEST_DATA_PATH = os.path.join(DATA_PATH,'testing',"test_data_file.csv")
+if not os.path.exists(TEST_DATA_PATH):
+    os.makedirs(TEST_DATA_PATH)
 
 MODEL_NAME= "tf_RNN_pretrained_embed"
 
