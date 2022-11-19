@@ -67,10 +67,15 @@ class RNN_pretrained_embed():
             num_y_classes=num_classes, num_layers=num_layers,
             neurons_num=neurons_num, embed_lay_output=embed_lay_output)
             
+        if num_classes>2:
+            y_train = tf.squeeze(tf.one_hot(y_train,num_classes))
+            if not y_val is None:
+                y_val = tf.squeeze(tf.one_hot(y_val,num_classes))
 
         if x_val is None:
             self.model.fit(x_train, y_train, epochs=epochs)
         else:
+            
             self.model.fit(x_train, y_train, epochs=epochs, validation_data=(
                 x_val, y_val), validation_steps=len(x_val))
 

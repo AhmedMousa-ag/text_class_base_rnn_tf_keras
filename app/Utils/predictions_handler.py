@@ -48,7 +48,7 @@ class Predictor():
         if len(preds.shape) ==1:
             return np.array(tf.round(preds),dtype=int)
         else:
-            return np.array(tf.argmax(preds),dtype=int)
+            return np.array(tf.argmax(preds, axis=1),dtype=int)
 
     def save_predictions(self,save_path = SAVED_TEST_PRED_PATH):
         path = os.path.join(save_path,"test_predictions.csv")
