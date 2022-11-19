@@ -1,6 +1,5 @@
 import os
 import tensorflow as tf
-import tensorflow_hub as hub
 from tensorflow.keras.layers import Dense, Bidirectional, GRU,Lambda, Flatten, Embedding, Input
 from tensorflow.keras.metrics import Recall, Accuracy, Precision
 import numpy as np
