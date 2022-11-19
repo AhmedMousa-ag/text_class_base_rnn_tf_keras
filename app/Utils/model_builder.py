@@ -83,6 +83,6 @@ class RNN_pretrained_embed():
 
 def load_model(save_path=MODEL_SAVE_PATH):
     path = os.path.join(save_path, MODEL_NAME)
-    model = tf.load_model(path)
+    model = tf.keras.models.load_model(path)
     print(f"Loaded model from: {path} successfully")
     return model
