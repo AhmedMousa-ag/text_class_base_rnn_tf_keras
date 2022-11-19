@@ -1,17 +1,15 @@
-from pydoc import doc
-import numpy as np, pandas as pd, random
 import os
 import json
 
 
 
 
-def read_json_file(file_path, file_type): 
+def read_json_file(file_path): 
     try:
         json_data = json.load(open(file_path)) 
         return json_data
     except: 
-        raise Exception(f"Error reading {file_type} file at: {file_path}")   
+        raise Exception(f"Error reading json file at: {file_path}")   
 
 
 def get_hyperparameters(hyper_param_path): 
