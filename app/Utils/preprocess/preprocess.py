@@ -1,4 +1,6 @@
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
+import tensorflow as tf
+from tensorflow.keras.layers import TextVectorization
 import pickle
 import os
 import config
@@ -8,7 +10,7 @@ import numpy as np
 
 ARTIFACTS_PATH = config.PREPROCESS_ARTIFACT_PATH
 DATA_SCHEMA = config.DATA_SCHEMA
-
+TEXT_VECTORIZER_NAME = config.TEXT_VECTORIZER_NAME
 
 class preprocess_data():
     def __init__(self, data, data_schema=DATA_SCHEMA, artifacts_path=ARTIFACTS_PATH,
@@ -47,17 +49,19 @@ class preprocess_data():
     def clean_data(self):
         if self.data.duplicated().sum() > 0:
             self.data.drop_duplicates(inplace=True)
-
-        if self.data.isnull().sum() > 0:
-            self.data.dropna(inplace=True)
+    
+        self.data.dropna(inplace=True)
 
         self.data.reset_index(drop=True)
 
     def fit_transform(self):
         ''' preprocess data based on the schema, in case it's not training then it will load the preprocess pickle object'''
-        for key in self.schema_param.keys():
+        for i,key in enumerate(self.schema_param.keys()):
             # for sorting the columns name later
-            self.sort_col_names.append(key)
+            self.sort_col_names.append(self.schema_param[key])
+
+            if i == 0: #Ids column always the first key and first column
+                self.id_col = self.schema_param[key]
             if key == "idField":
                 # It does nothing, but in case we decided to do something in the future
                 col_name = self.schema_param[key]
@@ -68,14 +72,19 @@ class preprocess_data():
                     self.data[col_name], col_name, self.artifacts_path, self.train)
             elif key == "documentField":
                 col_name = self.schema_param[key]
-                self.data[col_name] = prep_TEXT.get_process_text(
-                    self.data[col_name], col_name, self.artifacts_path, self.train)
+                #self.data[col_name] =
+                prep_text = prep_TEXT()
+                
+                self.data[col_name] = prep_text.get_process_text(
+                    data=self.data[col_name]
+                    ,col_name=col_name,artifacts_path= self.artifacts_path,
+                    Training= self.train)
 
     def define_labels(self):
         labels = []
-        for key in self.schema_param.keys:
+        for key in self.schema_param.keys():
             if "target" in key:
-                labels.append(key)
+                labels.append(self.schema_param[key])
 
         if len(labels) == 1:  # If it's one labels then will return a string of that label only
             return labels[0]
@@ -83,7 +92,7 @@ class preprocess_data():
             return labels
 
     def drop_ids(self):
-        self.data.drop('idField', axis=1, inplace=True)
+        self.data.drop(self.id_col, axis=1, inplace=True)
 
     def get_ids(self):
         return self.data['idField']
@@ -96,7 +105,7 @@ class preprocess_data():
         """Saves labels as pickle file to call them laters and know the labels column later for invers encode"""
         path = os.path.join(self.artifacts_path, "labels.pkl")
         pickle.dump(self.LABELS, open(path, 'wb'))
-        
+    
 
     def __split_x_y(self):
         self.y_data = self.data[self.LABELS]
@@ -125,9 +134,9 @@ class preprocess_data():
         """
         if self.gen_val_data:
             self.__train_test_split()
-            return self.x_train, self.y_train, self.x_test, self.y_test
+            return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1,1)), self.x_test.to_numpy(), self.y_test.to_numpy().reshape((-1,1))
         else:
-            return self.x_train, self.y_train
+            return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1,1))
 
     def get_data(self):
         return self.data
@@ -145,10 +154,48 @@ class prep_TEXT():
     def __init__(self):
         pass
 
+    
     def get_process_text(self, data, col_name=None, artifacts_path=None, Training=False):
-        """Univeral encoder handles it so will just return it as it's"""
+        """Don't need it with tensorflow, textvectorizer layer will handle it"""
+        if Training:
+            self.adapt_text_vectorizer(data=data, col_name=col_name, artifacts_path=artifacts_path, Training=Training)
         return data
+        
+    
+    def adapt_text_vectorizer(self,data, col_name=None, artifacts_path=None, Training=False):
+        """It adapts the text on the first call, then exported as a model layer and transformation happens inside the model """
+        
+        max_tokens = len(np.unique([text.split() for text in data]))
+        max_length = round(sum([len(i.split()) for i in data])/len(data))
+        print("output_sequence_length: ",max_length)
+        text_vectorizer = TextVectorization(max_tokens=max_tokens, # how many words in the vocabulary (all of the different words in your text)
+                                    standardize="lower_and_strip_punctuation", # how to process text
+                                    split="whitespace", # how to split tokens
+                                    output_mode="int", # how to map tokens to numbers
+                                    output_sequence_length=max_length)
+        
+        text_vectorizer.adapt(data)
+        self.save_text_vectorizer(text_vectorizer=text_vectorizer,artifacts_path=artifacts_path)
+        return text_vectorizer
 
+    
+    def save_text_vectorizer(self,text_vectorizer,artifacts_path):
+        path = os.path.join(artifacts_path,TEXT_VECTORIZER_NAME)
+        pickle.dump({'config': text_vectorizer.get_config(),
+             'weights': text_vectorizer.get_weights()}
+            , open(path, "wb"))
+
+    @classmethod
+    def load_text_vectorizer(self,main_path = ARTIFACTS_PATH):
+        path = os.path.join(main_path,TEXT_VECTORIZER_NAME)
+
+        pickle_load_file = pickle.load(open(path, "rb"))
+        text_vectorizer = TextVectorization.from_config(pickle_load_file['config'])
+        # You have to call `adapt` with some dummy data (BUG in Keras)
+        text_vectorizer.adapt(tf.data.Dataset.from_tensor_slices(["xyz"]))
+        text_vectorizer.set_weights(pickle_load_file['weights'])
+        
+        return text_vectorizer
 # -----------------------------------------------------------
 
 
