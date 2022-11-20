@@ -23,7 +23,7 @@ def get_hyperparameters(hyper_param_path):
 def get_model_config():
     try:
         model_cfg_path = os.path.join(os.path.dirname(__file__), 'config', 'model_config.json')
-        return read_json_file(model_cfg_path, "model config")
+        return read_json_file(model_cfg_path)
     except:
         raise Exception(f"Didn't find file: {model_cfg_path}")
 
