@@ -14,10 +14,10 @@ class RNN_pretrained_embed():
     def __init__(self):
         pass
 
-    def __build_model_compile(self, num_y_classes, num_layers, neurons_num, embed_lay_output):
+    def __build_model_compile(self, num_y_classes, num_layers, neurons_num, embed_lay_output,learning_rate):
         """This fucntion builds the model and compile it"""
         # tensorflow hub universal sentence encoder
-        optimizer = tf.keras.optimizers.Adam()
+        optimizer = tf.keras.optimizers.Adam(learning_rate)
         metrics = [Precision(),
                    Recall()
                    ]
@@ -61,10 +61,11 @@ class RNN_pretrained_embed():
         num_layers = training_params['num_layers']
         neurons_num = training_params['neurons_num']
         embed_lay_output = training_params['embed_lay_output']
-
+        lr = training_params['learning_rate']
         self.model = self.__build_model_compile(
             num_y_classes=num_classes, num_layers=num_layers,
-            neurons_num=neurons_num, embed_lay_output=embed_lay_output)
+            neurons_num=neurons_num, embed_lay_output=embed_lay_output,
+            learning_rate=lr)
             
         if num_classes>2:
             y_train = tf.squeeze(tf.one_hot(y_train,num_classes))
