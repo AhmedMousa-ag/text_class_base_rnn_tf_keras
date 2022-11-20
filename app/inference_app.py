@@ -60,8 +60,8 @@ def infer():
 
     # Do the prediction
     try: 
-        predector = Predictor(data)
-        predictions = predector.predict_get_results()
+        predector = Predictor(model=model)
+        predictions = predector.predict_get_results(data=data)
         # Convert from dataframe to CSV
         out = io.StringIO()
         predictions.to_csv(out, index=False)
