@@ -13,14 +13,10 @@ from Utils.model_builder import load_model
 import config
 
 MODEL_NAME = config.MODEL_NAME
-
+failure_path = config.FAILURE_PATH
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 warnings.filterwarnings('ignore') 
 
-
-data_schema_path = os.path.join(prefix, 'inputs', 'data_config')
-model_path = os.path.join(prefix, 'model', 'artifacts')
-failure_path = os.path.join(prefix, 'outputs', 'errors', 'serve_failure')
 
 
 

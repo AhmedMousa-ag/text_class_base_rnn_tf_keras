@@ -39,7 +39,7 @@ TRAIN_DATA_PATH = os.path.join(DATA_PATH,'training',"train_data_file.csv")
 TEST_DATA_PATH = os.path.join(DATA_PATH,'testing',"test_data_file.csv")
 
 
-MODEL_NAME= "tf_RNN_pretrained_embed"
+MODEL_NAME= "tf_bidirectional_text_class"
 
 MODEL_SAVE_PATH = os.path.join(prefix,'model','artifacts') 
 check_dir(MODEL_SAVE_PATH)

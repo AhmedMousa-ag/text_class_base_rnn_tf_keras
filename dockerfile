@@ -1,7 +1,5 @@
 FROM tensorflow/tensorflow:nightly-gpu
 
-FROM nginx
-
 
 RUN apt-get -y update && \
         apt-get -y install gcc mono-mcs && \
@@ -11,9 +9,13 @@ RUN apt-get -y update && \
          ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+RUN set -xe \
+    && apt-get -y install python3-pip
+RUN pip install --upgrade pip
+
 
 COPY ./requirements.txt .
-RUN pip3 install -r requirements.txt 
+RUN pip install -r requirements.txt 
 
 
 COPY app ./opt/app
@@ -29,7 +31,6 @@ ENV PATH="/opt/app:${PATH}"
 
 RUN chmod +x train &&\
     chmod +x test &&\
-    chmod +x tune &&\
     chmod +x serve 
 
 ENTRYPOINT [ "python3" ]
