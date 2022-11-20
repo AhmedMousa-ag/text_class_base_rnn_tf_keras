@@ -48,16 +48,18 @@ class Predictor():
         preds = np.array(tf.squeeze(preds))
         if len(preds.shape) < 2:
 
-            if preds.size <2: # If passed one prediction it cause and error if not expanded dimenstion
-                prediction = np.array(tf.expand_dims(tf.round(preds),axis=0),dtype=int)
+            if preds.size < 2:  # If passed one prediction it cause and error if not expanded dimenstion
+                prediction = np.array(tf.expand_dims(
+                    tf.round(preds), axis=0), dtype=int)
             else:
                 prediction = np.array(tf.round(preds), dtype=int)
-                
+
             return prediction
         else:
 
-            if preds.size <2: # If passed one prediction it cause and error if not expanded dimenstion
-                prediction = np.array(tf.expand_dims(tf.argmax(preds, axis=1),axis=0), dtype=int)
+            if preds.size < 2:  # If passed one prediction it cause and error if not expanded dimenstion
+                prediction = np.array(tf.expand_dims(
+                    tf.argmax(preds, axis=1), axis=0), dtype=int)
             else:
                 prediction = np.array(tf.argmax(preds, axis=1), dtype=int)
 

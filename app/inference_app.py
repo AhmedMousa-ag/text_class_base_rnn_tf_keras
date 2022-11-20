@@ -1,4 +1,4 @@
-# major part of code sourced from aws sagemaker example: 
+# major part of code sourced from aws sagemaker example:
 # https://github.com/aws/amazon-sagemaker-examples/blob/main/advanced_functionality/scikit_bring_your_own/container/decision_trees/predictor.py
 
 import io
@@ -8,7 +8,8 @@ import flask
 from flask import request
 import traceback
 import sys
-import os, warnings
+import os
+import warnings
 from Utils.predictions_handler import Predictor
 from Utils.model_builder import load_model
 import config
@@ -16,9 +17,7 @@ import config
 MODEL_NAME = config.MODEL_NAME
 failure_path = config.FAILURE_PATH
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
-warnings.filterwarnings('ignore') 
-
-
+warnings.filterwarnings('ignore')
 
 
 model = load_model()
@@ -32,10 +31,9 @@ app = flask.Flask(__name__)
 def ping():
     """Determine if the container is working and healthy. """
     status = 200
-    response=f"Hello - I am {MODEL_NAME} model and I am at your service!"
+    response = f"Hello - I am {MODEL_NAME} model and I am at your service!"
     print(response)
     return flask.Response(response=response, status=status, mimetype="application/json")
-
 
 
 @app.route("/infer", methods=["POST"])
@@ -50,17 +48,16 @@ def infer():
         data = flask.request.data.decode("utf-8")
         s = io.StringIO(data)
         data = pd.read_csv(s)
-    elif flask.request.content_type == 'application/json':
+    elif flask.request.content_type == 'application/json': # checks for json data
         data = flask.request.get_json()
-    else:                
+    else:
         return flask.Response(
-            response="This predictor only supports CSV data", #TODO support json data
+            response="This predictor only supports CSV, and json data",  
             status=415, mimetype="text/plain"
         )
 
-
     # Do the prediction
-    try: 
+    try:
         predector = Predictor(model=model)
         predictions = predector.predict_get_results(data=data)
         # Convert from dataframe to CSV
@@ -76,12 +73,11 @@ def infer():
         with open(failure_path, 'w') as s:
             s.write('Exception during inference: ' + str(err) + '\n' + trc)
         # Printing this causes the exception to be in the training job logs, as well.
-        print('Exception during inference: ' + str(err) + '\n' + trc, file=sys.stderr)
+        print('Exception during inference: ' +
+              str(err) + '\n' + trc, file=sys.stderr)
         # A non-zero exit code causes the training job to be marked as Failed.
-        
+
         return flask.Response(
-            response="Error generating predictions. Check failure file.", 
+            response="Error generating predictions. Check failure file.",
             status=400, mimetype="text/plain"
         )
-
-    

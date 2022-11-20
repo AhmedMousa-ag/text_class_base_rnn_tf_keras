@@ -12,6 +12,7 @@ ARTIFACTS_PATH = config.PREPROCESS_ARTIFACT_PATH
 DATA_SCHEMA = config.DATA_SCHEMA
 TEXT_VECTORIZER_NAME = config.TEXT_VECTORIZER_NAME
 
+
 class preprocess_data():
     def __init__(self, data, data_schema=DATA_SCHEMA, artifacts_path=ARTIFACTS_PATH,
                  shuffle_data=True, train=True, gen_val_data=True):
@@ -24,11 +25,8 @@ class preprocess_data():
             train: if it's True it will save artifacts to use later in serving or testing
         """
         if not isinstance(data, pd.DataFrame):  # This should handle if the passed data is json or something else
-            try:
-                self.data = pd.DataFrame(data)
-            except Exception as err:
-                print("current error is: ",err)
-                print("It's recommend to pass json values in lists... such as: {'id':[1,2,3]")
+            self.data = pd.DataFrame(data)
+
         else:
             self.data = data
 
@@ -53,22 +51,23 @@ class preprocess_data():
     def clean_data(self):
         if self.data.duplicated().sum() > 0:
             self.data.drop_duplicates(inplace=True)
-    
+
         self.data.dropna(inplace=True)
 
         self.data.reset_index(drop=True)
 
     def fit_transform(self):
         ''' preprocess data based on the schema, in case it's not training then it will load the preprocess pickle object'''
-        for i,key in enumerate(self.schema_param.keys()):
+        for i, key in enumerate(self.schema_param.keys()):
             # for sorting the columns name later
-            if i == 0: #Ids column always the first key and first column
+            if i == 0:  # Ids column always the first key and first column
                 self.id_col = self.schema_param[key]
             if key == "idField":
                 # It does nothing, but in case we decided to do something in the future
                 col_name = self.schema_param[key]
                 self.sort_col_names.append(col_name)
-                self.data[col_name] = prep_NUMERIC.handle_id(self.data[col_name])
+                self.data[col_name] = prep_NUMERIC.handle_id(
+                    self.data[col_name])
 
             elif key == "targetField":  # Will assume it's label and startes to label encode it
                 if self.train:
@@ -79,14 +78,13 @@ class preprocess_data():
             elif key == "documentField":
                 col_name = self.schema_param[key]
                 self.sort_col_names.append(col_name)
-                
+
                 prep_text = prep_TEXT()
-                
+
                 self.data[col_name] = prep_text.get_process_text(
-                    data=self.data[col_name]
-                    ,col_name=col_name,artifacts_path= self.artifacts_path,
-                    Training= self.train)
-                
+                    data=self.data[col_name], col_name=col_name, artifacts_path=self.artifacts_path,
+                    Training=self.train)
+
     def define_labels(self):
         labels = []
         for key in self.schema_param.keys():
@@ -114,13 +112,11 @@ class preprocess_data():
             path = os.path.join(self.artifacts_path, "labels.txt")
             # Will save it in a txt file
             with open(path, "w") as f:
-                if isinstance(self.LABELS,str): #If it's one label not multiple
+                if isinstance(self.LABELS, str):  # If it's one label not multiple
                     f.write(self.LABELS)
-                else:   
+                else:
                     for label in self.LABELS:
                         f.write(label+"\n")
-            
-    
 
     def __split_x_y(self):
         self.y_data = self.data[self.LABELS]
@@ -149,9 +145,9 @@ class preprocess_data():
         """
         if self.gen_val_data:
             self.__train_test_split()
-            return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1,1)), self.x_test.to_numpy(), self.y_test.to_numpy().reshape((-1,1))
+            return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1, 1)), self.x_test.to_numpy(), self.y_test.to_numpy().reshape((-1, 1))
         else:
-            return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1,1))
+            return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1, 1))
 
     def get_data(self):
         return self.data
@@ -163,13 +159,14 @@ class preprocess_data():
         with open(path, "rb") as f:
             for line in f:
                 new_labels_list.append(line)
-        
-        if len(new_labels_list) == 1: #If it reads only one line which is one label
-            labels =new_labels_list[0].decode().replace("\n","")
-        else:
-            labels = new_labels_list.decode().replace("\n","")
 
-        inv_data = prep_NUMERIC.Inverse_Encoding(data, labels, self.artifacts_path)
+        if len(new_labels_list) == 1:  # If it reads only one line which is one label
+            labels = new_labels_list[0].decode().replace("\n", "")
+        else:
+            labels = new_labels_list.decode().replace("\n", "")
+
+        inv_data = prep_NUMERIC.Inverse_Encoding(
+            data, labels, self.artifacts_path)
         return inv_data
 # ----------------------------------------------------------
 
@@ -178,47 +175,46 @@ class prep_TEXT():
     def __init__(self):
         pass
 
-    
     def get_process_text(self, data, col_name=None, artifacts_path=None, Training=False):
         """Don't need it with tensorflow, textvectorizer layer will handle it"""
         if Training:
-            self.adapt_text_vectorizer(data=data, col_name=col_name, artifacts_path=artifacts_path, Training=Training)
+            self.adapt_text_vectorizer(
+                data=data, col_name=col_name, artifacts_path=artifacts_path, Training=Training)
         return data
-        
-    
-    def adapt_text_vectorizer(self,data, col_name=None, artifacts_path=None, Training=False):
+
+    def adapt_text_vectorizer(self, data, col_name=None, artifacts_path=None, Training=False):
         """It adapts the text on the first call, then exported as a model layer and transformation happens inside the model """
-        
+
         max_tokens = len(np.unique([text.split() for text in data]))
         max_length = round(sum([len(i.split()) for i in data])/len(data))
-        
-        text_vectorizer = TextVectorization(max_tokens=max_tokens, # how many words in the vocabulary (all of the different words in your text)
-                                    standardize="lower_and_strip_punctuation", # how to process text
-                                    split="whitespace", # how to split tokens
-                                    output_mode="int", # how to map tokens to numbers
-                                    output_sequence_length=max_length)
-        
+
+        text_vectorizer = TextVectorization(max_tokens=max_tokens,  # how many words in the vocabulary (all of the different words in your text)
+                                            standardize="lower_and_strip_punctuation",  # how to process text
+                                            split="whitespace",  # how to split tokens
+                                            output_mode="int",  # how to map tokens to numbers
+                                            output_sequence_length=max_length)
+
         text_vectorizer.adapt(data)
-        self.save_text_vectorizer(text_vectorizer=text_vectorizer,artifacts_path=artifacts_path)
+        self.save_text_vectorizer(
+            text_vectorizer=text_vectorizer, artifacts_path=artifacts_path)
         return text_vectorizer
 
-    
-    def save_text_vectorizer(self,text_vectorizer,artifacts_path):
-        path = os.path.join(artifacts_path,TEXT_VECTORIZER_NAME)
+    def save_text_vectorizer(self, text_vectorizer, artifacts_path):
+        path = os.path.join(artifacts_path, TEXT_VECTORIZER_NAME)
         pickle.dump({'config': text_vectorizer.get_config(),
-             'weights': text_vectorizer.get_weights()}
-            , open(path, "wb"))
+                     'weights': text_vectorizer.get_weights()}, open(path, "wb"))
 
     @classmethod
-    def load_text_vectorizer(self,main_path = ARTIFACTS_PATH):
-        path = os.path.join(main_path,TEXT_VECTORIZER_NAME)
+    def load_text_vectorizer(self, main_path=ARTIFACTS_PATH):
+        path = os.path.join(main_path, TEXT_VECTORIZER_NAME)
 
         pickle_load_file = pickle.load(open(path, "rb"))
-        text_vectorizer = TextVectorization.from_config(pickle_load_file['config'])
+        text_vectorizer = TextVectorization.from_config(
+            pickle_load_file['config'])
         # You have to call `adapt` with some dummy data (BUG in Keras)
         text_vectorizer.adapt(tf.data.Dataset.from_tensor_slices(["xyz"]))
         text_vectorizer.set_weights(pickle_load_file['weights'])
-        
+
         return text_vectorizer
 # -----------------------------------------------------------
 
@@ -235,15 +231,15 @@ class prep_NUMERIC():
             encoded_data = encoder.fit_transform(data)
             pickle.dump(encoder, open(path, 'wb'))
         else:
-            encoder = pickle.load(open(path,"rb"))
+            encoder = pickle.load(open(path, "rb"))
             encoded_data = encoder.transform(data)
         return encoded_data
 
     @classmethod
     def Inverse_Encoding(self, data, col_name, artifacts_path):
-        print("column name: ",col_name)
+        print("column name: ", col_name)
         path = os.path.join(artifacts_path, col_name+".pkl")
-        encoder = pickle.load(open(path,"rb")) 
+        encoder = pickle.load(open(path, "rb"))
         encoded_data = encoder.inverse_transform(data)
         return encoded_data
 
@@ -259,7 +255,7 @@ class prep_NUMERIC():
             scaled_data = scaler.fit_transform(np.array(data).reshape(-1, 1))
             pickle.dump(scaler, open(path, 'wb'))
         else:
-            scaler = pickle.load(open(path,"rb"))
+            scaler = pickle.load(open(path, "rb"))
             scaled_data = scaler.transform(np.array(data).reshape(-1, 1))
         return scaled_data
 
@@ -271,6 +267,6 @@ class prep_NUMERIC():
             scaled_data = scaler.fit_transform(np.array(data).reshape(-1, 1))
             pickle.dump(scaler, open(path, 'wb'))
         else:
-            scaler = pickle.load(open(path,"rb"))
+            scaler = pickle.load(open(path, "rb"))
             scaled_data = scaler.transform(np.array(data).reshape(-1, 1))
         return scaled_data
