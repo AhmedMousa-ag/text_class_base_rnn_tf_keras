@@ -13,11 +13,18 @@ def read_json_file(file_path):
 
 
 def get_hyperparameters(hyper_param_path): 
-    hyperparameters_path = os.path.join(hyper_param_path, 'hyperparameters.json')
-    return read_json_file(hyperparameters_path, "hyperparameters")
+    try:
+        hyperparameters_path = os.path.join(hyper_param_path, 'hyperparameters.json')
+        return read_json_file(hyperparameters_path)
+    except:
+        raise Exception(f"Didn't find file: {hyperparameters_path}")
 
 
 def get_model_config():
-    model_cfg_path = os.path.join(os.path.dirname(__file__), 'config', 'model_config.json')
-    return read_json_file(model_cfg_path, "model config")
+    try:
+        model_cfg_path = os.path.join(os.path.dirname(__file__), 'config', 'model_config.json')
+        return read_json_file(model_cfg_path, "model config")
+    except:
+        raise Exception(f"Didn't find file: {model_cfg_path}")
+
 
