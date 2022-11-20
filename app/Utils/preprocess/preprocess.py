@@ -24,7 +24,11 @@ class preprocess_data():
             train: if it's True it will save artifacts to use later in serving or testing
         """
         if not isinstance(data, pd.DataFrame):  # This should handle if the passed data is json or something else
-            self.data = pd.DataFrame.from_dict(data, orient="index")
+            try:
+                self.data = pd.DataFrame(data)
+            except Exception as err:
+                print("current error is: ",err)
+                print("It's recommend to pass json values in lists... such as: {'id':[1,2,3]")
         else:
             self.data = data
 

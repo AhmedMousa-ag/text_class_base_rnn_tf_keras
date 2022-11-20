@@ -5,6 +5,7 @@ import io
 import pandas as pd
 import json
 import flask
+from flask import request
 import traceback
 import sys
 import os, warnings
@@ -44,19 +45,19 @@ def infer():
     just means one prediction per line, since there's a single column.
     """
     data = None
-    
     # Convert from CSV to pandas
     if flask.request.content_type == "text/csv":
         data = flask.request.data.decode("utf-8")
         s = io.StringIO(data)
         data = pd.read_csv(s)
+    elif flask.request.content_type == 'application/json':
+        data = flask.request.get_json()
     else:                
         return flask.Response(
             response="This predictor only supports CSV data", #TODO support json data
             status=415, mimetype="text/plain"
         )
 
-    print(f"Invoked with {data.shape[0]} records")
 
     # Do the prediction
     try: 

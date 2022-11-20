@@ -45,12 +45,23 @@ class Predictor():
         return results_pd
 
     def conv_labels_no_probability(self, preds):
-        preds = tf.squeeze(preds)
-        print(f"shape: {preds.shape}, and len is: {len(preds.shape)}")
-        if len(preds.shape) == 1:
-            return np.array(tf.round(preds), dtype=int)
+        preds = np.array(tf.squeeze(preds))
+        if len(preds.shape) < 2:
+
+            if preds.size <2: # If passed one prediction it cause and error if not expanded dimenstion
+                prediction = np.array(tf.expand_dims(tf.round(preds),axis=0),dtype=int)
+            else:
+                prediction = np.array(tf.round(preds), dtype=int)
+                
+            return prediction
         else:
-            return np.array(tf.argmax(preds, axis=1), dtype=int)
+
+            if preds.size <2: # If passed one prediction it cause and error if not expanded dimenstion
+                prediction = np.array(tf.expand_dims(tf.argmax(preds, axis=1),axis=0), dtype=int)
+            else:
+                prediction = np.array(tf.argmax(preds, axis=1), dtype=int)
+
+            return prediction
 
     def save_predictions(self, save_path=SAVED_TEST_PRED_PATH):
         path = os.path.join(save_path, "test_predictions.csv")

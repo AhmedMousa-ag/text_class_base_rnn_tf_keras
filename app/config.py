@@ -19,7 +19,7 @@ TEXT_VECTORIZER_NAME = 'text_vectorizer.h5'
 
 DATA_SCHEMA = read_json_file(DATA_SCHEMA_PATH)
 
-FAILURE_PATH = os.path.join(prefix,'outputs','errors') 
+FAILURE_PATH = os.path.join(prefix,'outputs','errors','serve_failure.txt') 
 check_dir(FAILURE_PATH)
 
 
