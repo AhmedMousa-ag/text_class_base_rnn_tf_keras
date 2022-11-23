@@ -1,7 +1,11 @@
+import logging, os
+logging.disable(logging.WARNING)
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 import os
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Bidirectional, GRU,Lambda, Flatten, Embedding, Input
-from tensorflow.keras.metrics import Recall, Accuracy, Precision
+from tensorflow.keras.layers import Dense, Bidirectional, GRU, Flatten, Embedding, Input
+from tensorflow.keras.metrics import Recall, Precision
 import numpy as np
 import config
 from Utils.preprocess.preprocess import prep_TEXT
@@ -54,18 +58,21 @@ class RNN_pretrained_embed():
             model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
         return model
 
-    def fit(self, x_train, y_train, training_params, x_val=None, y_val=None):
+    def fit(self, x_train, y_train, x_val=None, y_val=None,
+            epochs=10,
+            num_layers=2,
+            neurons_num=50,
+            embed_lay_output=120,
+            learning_rate=1e-2,
+            ):
         num_classes = len(np.unique(y_train))
 
-        epochs = training_params['epochs']
-        num_layers = training_params['num_layers']
-        neurons_num = training_params['neurons_num']
-        embed_lay_output = training_params['embed_lay_output']
-        lr = training_params['learning_rate']
+        
+
         self.model = self.__build_model_compile(
             num_y_classes=num_classes, num_layers=num_layers,
             neurons_num=neurons_num, embed_lay_output=embed_lay_output,
-            learning_rate=lr)
+            learning_rate=learning_rate)
             
         if num_classes>2:
             y_train = tf.squeeze(tf.one_hot(y_train,num_classes))

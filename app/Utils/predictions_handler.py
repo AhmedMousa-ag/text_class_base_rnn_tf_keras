@@ -1,3 +1,7 @@
+import logging, os
+logging.disable(logging.WARNING)
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 from Utils.preprocess.preprocess import preprocess_data
 from Utils.model_builder import load_model
 import pandas as pd
@@ -5,6 +9,9 @@ import config
 import os
 import tensorflow as tf
 import numpy as np
+import warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  
+warnings.filterwarnings('ignore')
 
 SAVED_TEST_PRED_PATH = config.SAVED_TEST_PRED_PATH
 
