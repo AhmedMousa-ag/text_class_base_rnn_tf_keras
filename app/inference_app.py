@@ -3,7 +3,6 @@
 
 import io
 import pandas as pd
-import json
 import flask
 from flask import request
 import traceback
@@ -70,7 +69,8 @@ def infer():
     except Exception as err:
         # Write out an error file. This will be returned as the failureReason to the client.
         trc = traceback.format_exc()
-        with open(failure_path, 'w') as s:
+        path = os.path.join(failure_path,"serve_failure.txt")
+        with open(path, 'w') as s:
             s.write('Exception during inference: ' + str(err) + '\n' + trc)
         # Printing this causes the exception to be in the training job logs, as well.
         print('Exception during inference: ' +
