@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:nightly-gpu
+FROM tensorflow/tensorflow 
 
 
 RUN apt-get -y update && \
