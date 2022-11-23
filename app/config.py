@@ -6,7 +6,8 @@ def check_dir(dir_path):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
-prefix = os.path.join('opt','ml_vol')
+
+prefix = os.path.join(os.pardir,'ml_vol')
 
 PREPROCESS_ARTIFACT_PATH = os.path.join("Utils","preprocess","artifacts")
 check_dir(PREPROCESS_ARTIFACT_PATH)
@@ -33,10 +34,10 @@ check_dir(os.path.join(DATA_PATH,"training"))
 check_dir(os.path.join(DATA_PATH,"testing"))
 
 
-TRAIN_DATA_PATH = glob.glob(os.path.join(DATA_PATH,'training',"*.csv"))[0] 
+TRAIN_DATA_PATH = glob.glob(os.path.join(DATA_PATH,'training',"textClassificationBaseMainInput","*.csv"))[0] 
 
 
-TEST_DATA_PATH = glob.glob(os.path.join(DATA_PATH,'testing',"*.csv"))[0]
+TEST_DATA_PATH = glob.glob(os.path.join(DATA_PATH,'testing',"textClassificationBaseMainInput","*.csv"))[0]
 
 
 MODEL_NAME= "tf_bidirectional_text_class"
