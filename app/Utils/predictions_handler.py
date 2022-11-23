@@ -34,7 +34,6 @@ class Predictor():
         preds = self.model.predict(processed_data)
         preds = self.conv_labels_no_probability(preds)
 
-        print("preds are: ", preds)
 
         preds = self.preprocessor.invers_labels(preds)
 
