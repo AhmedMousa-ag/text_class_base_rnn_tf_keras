@@ -44,7 +44,6 @@ class Predictor():
         preds_no_prob = self.conv_labels_no_probability(preds)
 
         num_uniq_preds = len(np.unique(preds_no_prob))
-        print("number of unique preds: ",num_uniq_preds)
         uniqe_preds_names = np.squeeze(self.preprocessor.invers_labels(sorted(range(num_uniq_preds))))
 
         results_pd = pd.DataFrame([])
@@ -68,8 +67,6 @@ class Predictor():
 
                 results_pd[uniqe_preds_names[0]] = np.round(first_col_pred,5)
                 results_pd[uniqe_preds_names[1]] = np.round(sec_col_pred,5)
-
-
 
         # will convert get final prediction 
         preds = self.conv_labels_no_probability(preds)
