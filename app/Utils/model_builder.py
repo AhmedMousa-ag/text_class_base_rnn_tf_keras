@@ -58,7 +58,7 @@ class RNN_pretrained_embed():
             model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
         return model
 
-    def fit(self, x_train, y_train, x_val=None, y_val=None,
+    def fit(self, x_train, y_train, x_val=None, y_val=None,call_backs=[],
             epochs=10,
             num_layers=2,
             neurons_num=50,
@@ -80,11 +80,11 @@ class RNN_pretrained_embed():
                 y_val = tf.squeeze(tf.one_hot(y_val,num_classes))
 
         if x_val is None:
-            self.model.fit(x_train, y_train, epochs=epochs)
+            self.model.fit(x_train, y_train, epochs=epochs,callbacks=call_backs)
         else:
             
             self.model.fit(x_train, y_train, epochs=epochs, validation_data=(
-                x_val, y_val), validation_steps=len(x_val))
+                x_val, y_val), validation_steps=len(x_val),callbacks=call_backs)
 
         return self.model
 
