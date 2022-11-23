@@ -237,7 +237,6 @@ class prep_NUMERIC():
 
     @classmethod
     def Inverse_Encoding(self, data, col_name, artifacts_path):
-        print("column name: ", col_name)
         path = os.path.join(artifacts_path, col_name+".pkl")
         encoder = pickle.load(open(path, "rb"))
         encoded_data = encoder.inverse_transform(data)
