@@ -52,7 +52,7 @@ class Predictor():
 
         if num_uniq_preds > 2:
             for i,uniqe in enumerate(uniqe_preds_names):
-                results_pd[uniqe] = preds[:,i]
+                results_pd[uniqe] = np.round(preds[:,i],5)
         else:
             #This means it's either 0 or 1
                 pred = np.squeeze(preds)
