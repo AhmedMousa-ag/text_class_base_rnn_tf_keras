@@ -12,6 +12,8 @@ from Utils.preprocess.preprocess import prep_TEXT
 
 MODEL_NAME = config.MODEL_NAME
 MODEL_SAVE_PATH = config.MODEL_SAVE_PATH
+seed = config.RAND_SEED
+tf.random.set_seed(seed)
 
 
 class RNN_pretrained_embed():

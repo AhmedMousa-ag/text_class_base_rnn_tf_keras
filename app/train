@@ -18,6 +18,8 @@ data_schema = config.DATA_SCHEMA
 data_path = config.TRAIN_DATA_PATH
 failure_path = config.FAILURE_PATH
 save_model_path = config.MODEL_SAVE_PATH
+seed = config.RAND_SEED
+tf.random.set_seed(seed)
 
 
 def train():

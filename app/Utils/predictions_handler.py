@@ -15,6 +15,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings('ignore')
 
 SAVED_TEST_PRED_PATH = config.SAVED_TEST_PRED_PATH
+seed = config.RAND_SEED
+tf.random.set_seed(seed)
 
 
 class Predictor():

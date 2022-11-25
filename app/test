@@ -8,9 +8,13 @@ import config
 import traceback
 import pandas as pd
 from Utils.predictions_handler import Predictor
-import os 
+import os
+import tensorflow as tf
+ 
 test_data_path = config.TEST_DATA_PATH
 failure_path = config.FAILURE_PATH
+seed = config.RAND_SEED
+tf.random.set_seed(seed)
 
 def test():    
     try:        
