@@ -6,10 +6,11 @@ def check_dir(dir_path):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
-#TODO uncomment this
-#prefix = os.path.join(os.pardir,'ml_vol')
-prefix = os.path.join('opt','ml_vol')
+prefix = os.path.join(os.pardir,'ml_vol')
+#prefix = os.path.join('opt','ml_vol')
 
+
+RAND_SEED = 42
 
 
 DATA_SCHEMA_PATH = glob.glob(os.path.join(prefix,"inputs","data_config","*.json"))[0] #Gets the first file of json type
