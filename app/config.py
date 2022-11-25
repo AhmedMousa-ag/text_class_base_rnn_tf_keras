@@ -8,8 +8,8 @@ def check_dir(dir_path):
         os.makedirs(dir_path)
 
 
-#prefix = os.path.join(os.pardir, 'ml_vol')
-prefix = os.path.join('opt','ml_vol')
+prefix = os.path.join(os.pardir, 'ml_vol')
+#prefix = os.path.join('opt','ml_vol')
 
 
 RAND_SEED = 42
