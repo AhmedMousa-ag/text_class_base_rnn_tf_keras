@@ -41,7 +41,7 @@ class preprocess_data():
         self.artifacts_path = artifacts_path
         self.train = train
         self.LABELS = self.define_labels()  # Get's labels columns
-
+        self.id_col=''
         self.clean_data()  # Checks for dublicates or null values and removes them
 
         if shuffle_data:
@@ -109,7 +109,10 @@ class preprocess_data():
     def sort_as_schem(self):
         '''To ensure the consistancy of inputs are the same each time'''
         self.data = self.data[self.sort_col_names]
-
+    
+    def get_id_col_name(self):
+        return self.id_col
+        
     def save_label_pkl(self):
         """Saves labels as pickle file to call them laters and know the labels column later for invers encode"""
         if self.train:

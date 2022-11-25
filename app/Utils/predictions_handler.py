@@ -22,7 +22,7 @@ class Predictor():
 
         if model is None:
             self.model = load_model()
-        else:  # Modelshould be reloaded before getting the reques, that's the reason to pass the model to the predictor
+        else:  # Model should be reloaded before getting the request, that's the reason to pass the model to the predictor
             self.model = model
 
         if not data is None:
@@ -34,6 +34,7 @@ class Predictor():
             self.preprocessor = preprocess_data(
                 data, train=False, shuffle_data=False)
 
+        id_col_name = self.preprocessor.get_id_col_name()
         ids = self.preprocessor.get_ids()
         self.preprocessor.drop_ids()
 
@@ -47,7 +48,7 @@ class Predictor():
         uniqe_preds_names = np.squeeze(self.preprocessor.invers_labels(sorted(range(num_uniq_preds))))
 
         results_pd = pd.DataFrame([])
-        results_pd['idField'] = ids
+        results_pd[id_col_name] = ids
 
         if num_uniq_preds > 2:
             for i,uniqe in enumerate(uniqe_preds_names):
@@ -55,24 +56,14 @@ class Predictor():
         else:
             #This means it's either 0 or 1
                 pred = np.squeeze(preds)
-                first_col_pred = []
-                sec_col_pred = []
-                for pred in np.squeeze(preds):
-                    if pred > 0.5:
-                        first_col_pred.append(pred-1)
-                        sec_col_pred.append(pred)
-                    else:
-                        first_col_pred.append(pred)
-                        sec_col_pred.append(pred-1)
-
-                results_pd[uniqe_preds_names[0]] = np.round(first_col_pred,5)
-                results_pd[uniqe_preds_names[1]] = np.round(sec_col_pred,5)
+                results_pd[uniqe_preds_names[0]] = np.round(1-pred,5)
+                results_pd[uniqe_preds_names[1]] = np.round(pred,5)
 
         # will convert get final prediction 
         preds = self.conv_labels_no_probability(preds)
         preds = self.preprocessor.invers_labels(preds)
-        results_pd["prediction"] = preds
-        results_pd = results_pd.sort_values(by=["idField"])
+        results_pd["prediction"] = preds #TODO comment if this column isn't wanted
+        results_pd = results_pd.sort_values(by=[id_col_name])
         return results_pd
 
     def predict_get_results(self, data=None):
@@ -80,9 +71,10 @@ class Predictor():
             self.preprocessor = preprocess_data(
                 data, train=False, shuffle_data=False)
 
+        id_col_name = self.preprocessor.get_id_col_name()
         ids = self.preprocessor.get_ids()
         self.preprocessor.drop_ids()
-
+        
         processed_data = self.preprocessor.get_data()
 
         preds = self.model.predict(processed_data)
@@ -91,9 +83,9 @@ class Predictor():
         preds = self.preprocessor.invers_labels(preds)
 
         results_pd = pd.DataFrame([])
-        results_pd['idField'] = ids
+        results_pd[id_col_name] = ids
         results_pd["prediction"] = preds
-        results_pd = results_pd.sort_values(by=["idField"])
+        results_pd = results_pd.sort_values(by=[id_col_name])
         return results_pd
 
     def conv_labels_no_probability(self, preds):
@@ -119,7 +111,6 @@ class Predictor():
 
     def save_predictions(self, save_path=SAVED_TEST_PRED_PATH):
         path = os.path.join(save_path, "test_predictions.csv")
-        # TODO replace it with the new function for predict_test
         test_result = self.predict_test()
-        test_result.to_csv(path)
+        test_result.to_csv(path,index=False)
         print(f"saved results to: {path}")
