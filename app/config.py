@@ -6,11 +6,10 @@ def check_dir(dir_path):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
+#TODO uncomment this
+#prefix = os.path.join(os.pardir,'ml_vol')
+prefix = os.path.join('opt','ml_vol')
 
-prefix = os.path.join(os.pardir,'ml_vol')
-
-PREPROCESS_ARTIFACT_PATH = os.path.join("Utils","preprocess","artifacts")
-check_dir(PREPROCESS_ARTIFACT_PATH)
 
 
 DATA_SCHEMA_PATH = glob.glob(os.path.join(prefix,"inputs","data_config","*.json"))[0] #Gets the first file of json type
@@ -44,6 +43,12 @@ MODEL_NAME= "tf_bidirectional_text_class"
 
 MODEL_SAVE_PATH = os.path.join(prefix,'model','artifacts') 
 check_dir(MODEL_SAVE_PATH)
+
+
+
+PREPROCESS_ARTIFACT_PATH = MODEL_SAVE_PATH #os.path.join("Utils","preprocess","artifacts")
+check_dir(PREPROCESS_ARTIFACT_PATH)
+
 
 SAVED_TEST_PRED_PATH = os.path.join(prefix,"outputs","testing_outputs")
 check_dir(SAVED_TEST_PRED_PATH)
