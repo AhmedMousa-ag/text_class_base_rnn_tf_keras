@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 import logging, os
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -35,8 +36,9 @@ def train():
         preprocessor.drop_ids()
         x_train, y_train, x_val, y_val = preprocessor.get_train_test_data()
 
-        callbacks = [] # we add desired call backs in a list
-        callbacks.append(tf.keras.callbacks.EarlyStopping(patience=1,verbose=1)) # If no callback is desired, leave list empty
+        callbacks = [] # we add desired call backs in a list # If no callback is desired, leave list empty
+        # Kindly change patience as you see fit in your project
+        callbacks.append(tf.keras.callbacks.EarlyStopping(patience=2,verbose=1)) 
         #callbacks.append(tf.keras.callbacks.ReduceLROnPlateau(patience=10,verbose=1))
         #callbacks.append(tf.keras.callbacks.TensorBoard(log_dir="./logs"))
         

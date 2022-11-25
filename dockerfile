@@ -33,4 +33,3 @@ RUN chmod +x train &&\
     chmod +x test &&\
     chmod +x serve 
 
-ENTRYPOINT [ "python3" ]
