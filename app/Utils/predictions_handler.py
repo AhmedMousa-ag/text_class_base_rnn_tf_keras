@@ -44,9 +44,8 @@ class Predictor():
 
         preds = self.model.predict(processed_data)
 
-        preds_no_prob = self.conv_labels_no_probability(preds)
 
-        num_uniq_preds = len(np.unique(preds_no_prob))
+        num_uniq_preds = [2 if np.array(preds).shape[1]==1 else np.array(preds).shape[1]][0]
         uniqe_preds_names = np.squeeze(self.preprocessor.invers_labels(sorted(range(num_uniq_preds))))
         results_pd = pd.DataFrame([])
         results_pd[id_col_name] = ids
