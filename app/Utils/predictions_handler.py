@@ -64,7 +64,7 @@ class Predictor():
         # will convert get final prediction 
         preds = self.conv_labels_no_probability(preds)
         preds = self.preprocessor.invers_labels(preds)
-        results_pd["prediction"] = preds #TODO comment if this column isn't wanted
+        #results_pd["prediction"] = preds 
         results_pd = results_pd.sort_values(by=[id_col_name])
         return results_pd
 

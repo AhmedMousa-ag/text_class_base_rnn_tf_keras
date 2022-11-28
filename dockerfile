@@ -29,6 +29,6 @@ ENV PATH="/opt/app:${PATH}"
 
 
 RUN chmod +x train &&\
-    chmod +x test &&\
+    chmod +x predict &&\
     chmod +x serve 
 
