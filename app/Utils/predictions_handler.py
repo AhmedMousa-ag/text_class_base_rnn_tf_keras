@@ -44,26 +44,28 @@ class Predictor():
 
         preds = self.model.predict(processed_data)
 
-        preds_no_prob = self.conv_labels_no_probability(preds)
+        #preds_no_prob = self.conv_labels_no_probability(preds)
 
-        num_uniq_preds = len(np.unique(preds_no_prob))
+        num_uniq_preds = np.squeeze(preds[0,:]).size
         uniqe_preds_names = np.squeeze(self.preprocessor.invers_labels(sorted(range(num_uniq_preds))))
 
         results_pd = pd.DataFrame([])
         results_pd[id_col_name] = ids
+        
 
         if num_uniq_preds > 2:
-            for i,uniqe in enumerate(uniqe_preds_names):
-                results_pd[uniqe] = np.round(preds[:,i],5)
+            for i in range(len(preds[0,:])): # Iterate over number of columns of model prediction 
+                col_name = self.preprocessor.invers_labels([i])[0]
+                results_pd[col_name] = np.round(preds[:,i],5)
         else:
             #This means it's either 0 or 1
                 pred = np.squeeze(preds)
                 results_pd[uniqe_preds_names[0]] = np.round(1-pred,5)
                 results_pd[uniqe_preds_names[1]] = np.round(pred,5)
 
-        # will convert get final prediction 
-        preds = self.conv_labels_no_probability(preds)
-        preds = self.preprocessor.invers_labels(preds)
+        # will convert get final prediction # uncomment if want to get final prediction column
+        #preds = self.conv_labels_no_probability(preds)
+        #preds = self.preprocessor.invers_labels(preds)
         #results_pd["prediction"] = preds 
         results_pd = results_pd.sort_values(by=[id_col_name])
         return results_pd
