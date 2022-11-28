@@ -1,5 +1,4 @@
-FROM tensorflow/tensorflow 
-
+FROM tensorflow/tensorflow:2.11.0-gpu
 
 RUN apt-get -y update && \
         apt-get -y install gcc mono-mcs && \
