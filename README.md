@@ -8,9 +8,9 @@ Is where all of code used to run train, test or serve modules.
 
 config.py: is a file to determine main configurations such as files paths used during preprocessing, training, serving.
 
-inference_app.py: is a file that decalere infer/ping and predictions to requested data happens
+inference_app.py: is a file that declare infer/ping and predictions to requested data happens.
 
-##### Utils:
+#### Utils:
 
 Utils consist of:
 
@@ -18,15 +18,27 @@ Utils consist of:
 
 2- model_builder.py: where the Machine Learning model defined, built, and loaded.
 
-3- predictions_handler.py: called when needed a prediction for inference or testing.
+3- predictions_handler.py: called when needed a prediction for inference or testing/predic.
 
 4- utils.py: general functions to help such as load json files.
+
+#### train
+
+python file, called to start training on the required dataset and saves trained model to be called later during inference or during testing.
+
+#### predict
+
+python file, called to generate test.csv file to test model preformance after training.
+
+#### serve
+
+python file, called to generate inferences in production on your server, listens to port 8080.
 
 ## Model architecture
 
 Model architecture can be defined using hyperparameters.json file located at app/opt/ml_vol/model/model_config.
 
-model consist of GRU RNN layer wrapped with bidirictional layer, number of layers can be defined in hyperparameters.json file.
+model consist of GRU RNN layers wrapped with bidirictional layer, number of layers can be defined in hyperparameters.json file that should be in "model/model_config/" folder.
 
 {
 
