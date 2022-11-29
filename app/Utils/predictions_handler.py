@@ -54,12 +54,12 @@ class Predictor():
         if num_uniq_preds > 2:
             for i in range(len(preds[0,:])): # Iterate over number of columns of model prediction 
                 col_name = self.preprocessor.invers_labels([i])[0]
-                results_pd[col_name] = np.round(preds[:,i],5)
+                results_pd[col_name] = preds[:,i]
         else:
             #This means it's either 0 or 1
                 pred = np.squeeze(preds)
-                results_pd[uniqe_preds_names[0]] = np.round(1-pred,5)
-                results_pd[uniqe_preds_names[1]] = np.round(pred,5)
+                results_pd[uniqe_preds_names[0]] = 1-pred
+                results_pd[uniqe_preds_names[1]] = pred
 
         # will convert get final prediction # uncomment if want to get final prediction column
         #preds = self.conv_labels_no_probability(preds)
