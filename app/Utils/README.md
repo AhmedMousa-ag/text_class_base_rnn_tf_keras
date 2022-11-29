@@ -16,12 +16,12 @@ prep_TEXT class, and prep_NUMERIC is where the processing happens. preprocess_da
 
 ## 2- model_builder.py
 
-Builds and train the model according to the passed data. also saves and loads the model.
+Builds and train the model according to the passed data and model config json file. also saves and loads the model.
 
 ## 3- predictions_handler.py
 
-consist of predictor class where we pass the data to it. calls the preprocess to process data and pass it to loaded model, then produce results in labels as a pandas data frame.
+Consist of predictor class where we pass the data to it. calls the preprocess to process data and pass it to loaded model, then produce results in labels as a pandas data frame.
 
 ## 4- utils.py
 
-consist of helping functions such as load_json_files.
+Consist of helping functions such as load_json_files.
