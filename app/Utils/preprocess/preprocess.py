@@ -1,16 +1,17 @@
-import logging, os
+import numpy as np
+import pandas as pd
+from Utils.preprocess.schema_handler import produce_schema_param
+import config
+import os
+import pickle
+from tensorflow.keras.layers import TextVectorization
+import tensorflow as tf
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
+import logging
+import os
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
-import tensorflow as tf
-from tensorflow.keras.layers import TextVectorization
-import pickle
-import os
-import config
-from Utils.preprocess.schema_handler import produce_schema_param
-import pandas as pd
-import numpy as np
 
 ARTIFACTS_PATH = config.PREPROCESS_ARTIFACT_PATH
 DATA_SCHEMA = config.DATA_SCHEMA
@@ -24,9 +25,10 @@ class preprocess_data():
         args:
             data: The data we want to preprocess
             data_schema: The schema that will handle the data
+            artifacts_path: Defines the path of generated preprocess artifacts during training 
             shuffle_data: If True it will shuffle the data before processing it
-            artifacts_path: The path to any saved/will save preprocess tool such as LabelEncoder
             train: if it's True it will save artifacts to use later in serving or testing
+            gen_val_data: If True, will split data into train and validation data
         """
         if not isinstance(data, pd.DataFrame):  # This should handle if the passed data is json or something else
             self.data = pd.DataFrame(data)
@@ -41,7 +43,7 @@ class preprocess_data():
         self.artifacts_path = artifacts_path
         self.train = train
         self.LABELS = self.define_labels()  # Get's labels columns
-        self.id_col=''
+        self.id_col = ''
         self.clean_data()  # Checks for dublicates or null values and removes them
 
         if shuffle_data:
@@ -109,10 +111,10 @@ class preprocess_data():
     def sort_as_schem(self):
         '''To ensure the consistancy of inputs are the same each time'''
         self.data = self.data[self.sort_col_names]
-    
+
     def get_id_col_name(self):
         return self.id_col
-        
+
     def save_label_pkl(self):
         """Saves labels as pickle file to call them laters and know the labels column later for invers encode"""
         if self.train:
@@ -154,13 +156,14 @@ class preprocess_data():
             self.__train_test_split()
             return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1, 1)), self.x_test.to_numpy(), self.y_test.to_numpy().reshape((-1, 1))
         else:
-            return self.x_train.to_numpy(), self.y_train.to_numpy().reshape((-1, 1))
+            self.__split_x_y()
+            return self.x_data.to_numpy(), self.y_data.to_numpy().reshape((-1, 1))
 
     def get_data(self):
         return self.data
 
     def invers_labels(self, data):
-        """Handles only onle label currently"""
+        """Handles only one label currently"""
         path = os.path.join(self.artifacts_path, "labels.txt")
         new_labels_list = []
         with open(path, "rb") as f:
@@ -180,6 +183,7 @@ class preprocess_data():
 
 class prep_TEXT():
     def __init__(self):
+        """This class handles string features"""
         pass
 
     def get_process_text(self, data, col_name=None, artifacts_path=None, Training=False):
@@ -227,6 +231,7 @@ class prep_TEXT():
 
 
 class prep_NUMERIC():
+    """This class handles Numeric features"""
     def __init__(self):
         pass
 
