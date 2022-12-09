@@ -1,4 +1,4 @@
-# text_classification_tensorflow_bidirectional_RNN_model
+# Text Classification Tensorflow Bidirectional RNN Model
 
 ## Navigatie Code
 
