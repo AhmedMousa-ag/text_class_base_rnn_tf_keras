@@ -4,7 +4,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import os
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Bidirectional, GRU, Flatten, Embedding, Input
+from tensorflow.keras.layers import Dense, Bidirectional, GRU, Embedding, Input, GlobalMaxPooling1D
 from tensorflow.keras.metrics import Recall, Precision
 import numpy as np
 import config
@@ -48,7 +48,7 @@ class RNN_pretrained_embed():
             model.add(Bidirectional(GRU(neurons_num,return_sequences=True),
                         name=f"Bidirectional_layer_{i}"))
 
-        model.add(Flatten())
+        model.add(GlobalMaxPooling1D())
 
         if num_y_classes > 2:
             model.add(Dense(num_y_classes, activation='softmax'))
